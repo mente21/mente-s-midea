@@ -1,5 +1,15 @@
 import express from 'express'
-import { AcceptConnectionRequest, discoverUsers, followUsers, getUserConnections, getUserData, getUserProfiles, getUserProfiles, sendConnectionRequest, unfollowUser, updateUserData } from '../controllers/userController.js';
+import {
+    AcceptConnectionRequest,
+    discoverUsers,
+    followUsers,
+    getUserConnections,
+    getUserData,
+    getUserProfiles,
+    sendConnectionRequest,
+    unfollowUser,
+    updateUserData
+} from '../controllers/userController.js';
 import { protect } from '../middlewares/auth.js'
 import { upload } from '../configs/multer.js'
 import { getUserRecentMessages } from '../controllers/messageController.js';
