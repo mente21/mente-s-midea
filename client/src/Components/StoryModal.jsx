@@ -1,6 +1,8 @@
+import { useAuth } from '@clerk/clerk-react'
 import { ArrowLeft, Sparkle, Type, Upload } from 'lucide-react'
 import React, { useState } from 'react'
 import toast from 'react-hot-toast'
+import api from '../api/axios'
 
 const StoryModal = ({ setShowModal, fetchStories }) => {
   const bgColors = ["#4f46e5", "#7c3aed", "#db2777", "#e11d48", "#ca8a04", "#0d9488"]
@@ -10,18 +12,80 @@ const StoryModal = ({ setShowModal, fetchStories }) => {
   const [text, setText] = useState("")
   const [media, setMedia] = useState(null)
   const [previewUrl, setPreviewUrl] = useState(null)
+  const { getToken } = useAuth()
+
+  const MAX_VIDEO_DURATION = 60 // seconds
+  const MAX_VIDEO_SIZE_MB = 50 // MB
 
   const handleMediaUpload = (e) => {
     const file = e.target.files?.[0]
-    if (file) {
+    if (!file) return
+
+    if (file.type.startsWith("video")) {
+      if (file.size > MAX_VIDEO_SIZE_MB * 1024 * 1024) {
+        toast.error(`Video file size cannot exceed ${MAX_VIDEO_SIZE_MB}MB.`)
+        setMedia(null)
+        setPreviewUrl(null)
+        return
+      }
+
+      const video = document.createElement('video')
+      video.preload = 'metadata'
+      video.onloadedmetadata = () => {
+        window.URL.revokeObjectURL(video.src)
+        if (video.duration > MAX_VIDEO_DURATION) {
+          toast.error("Video duration cannot exceed 1 minute.")
+          setMedia(null)
+          setPreviewUrl(null)
+        } else {
+          setMedia(file)
+          setPreviewUrl(URL.createObjectURL(file))
+          setText('')
+          setMode("media")
+        }
+      }
+      video.src = URL.createObjectURL(file)
+    } else if (file.type.startsWith("image")) {
       setMedia(file)
       setPreviewUrl(URL.createObjectURL(file))
+      setText('')
       setMode("media")
     }
   }
 
   const handleCreateStory = async () => {
-    // TODO: implement story creation logic
+    const media_type = mode === 'media'
+      ? media?.type.startsWith('image')
+        ? 'image'
+        : 'video'
+      : 'text'
+
+    if (media_type === "text" && !text) {
+      return toast.error("Please enter some text")
+    }
+
+    const formData = new FormData()
+    formData.append('content', text)
+    formData.append('media_type', media_type)
+    formData.append('media', media)
+    formData.append('background_color', background)
+
+    try {
+      const token = await getToken()
+      const { data } = await api.post('/api/story/create', formData, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+
+      if (data.success) {
+        setShowModal(false)
+        toast.success("Story created successfully")
+        fetchStories()
+      } else {
+        toast.error(data.message)
+      }
+    } catch (error) {
+      toast.error(error.message)
+    }
   }
 
   return (
@@ -83,7 +147,7 @@ const StoryModal = ({ setShowModal, fetchStories }) => {
               className={`flex-1 flex items-center justify-center gap-2 p-2 rounded cursor-pointer ${mode === 'media' ? "bg-white text-black" : "bg-zinc-800"}`}
             >
               <input
-                onChange={(e) => handleMediaUpload(e)} // ✅ fixed event passing
+                onChange={handleMediaUpload}
                 type="file"
                 accept='image/*,video/*'
                 className='hidden'
@@ -92,11 +156,14 @@ const StoryModal = ({ setShowModal, fetchStories }) => {
             </label>
           </div>
 
-          <button onClick={() => toast.promise(handleCreateStory(), {
-            loading: 'Saving...',
-            success: <p>Story Added</p>,
-            error: e => <p>{e.message}</p>,
-          })} className='flex items-center justify-center gap-2 text-white py-3 mt-4 w-full rounded bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 active:scale-95 transition cursor-pointer'>
+          <button
+            onClick={() => toast.promise(handleCreateStory(), {
+              loading: 'Saving...',
+              success: 'Story created successfully!',
+              error: 'Failed to create story'
+            })}
+            className='flex items-center justify-center gap-2 text-white py-3 mt-4 w-full rounded bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 active:scale-95 transition cursor-pointer'
+          >
             <Sparkle size={18} />Create Story
           </button>
         </div>

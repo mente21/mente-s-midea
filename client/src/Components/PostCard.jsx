@@ -1,22 +1,42 @@
 import React, { useState } from 'react'
 import { BadgeCheck, Heart, MessageCircle, Share2 } from 'lucide-react'
 import moment from 'moment'
-import { dummyUserData } from '../assets/assets'
 import { useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
+import { useAuth } from '@clerk/clerk-react'
+import api from '../api/axios'
+import toast from 'react-hot-toast'
 
 const PostCard = ({ post }) => {
+    const [likes, setLikes] = useState(post.likes || []) // ✅ FIX 1: define likes state
+    const { getToken } = useAuth()
+    const currentUser = useSelector((state) => state.user.value)
 
-    const postWithHashtags = post.content.replace(/(#\w+)/g, '<span class="text-indigo-600">$1</span>')
+    const postWithHashtags = post.content?.replace(/(#\w+)/g, '<span class="text-indigo-600">$1</span>')
 
-    const [likes, setLikes] = useState(post.likes || [])
-    const currentUser = dummyUserData
+    // ✅ FIX 2: add async to handleLike
+    const handleLike = async () => {
+        try {
+            const { data } = await api.post(
+                `/api/post/like`,
+                { postId: post._id },
+                { headers: { Authorization: `Bearer ${await getToken()}` } }
+            )
 
-    const handleLike = () => {
-        //  Simple toggle like
-        if (likes.includes(currentUser._id)) {
-            setLikes(likes.filter(id => id !== currentUser._id))
-        } else {
-            setLikes([...likes, currentUser._id])
+            if (data.success) {
+                toast.success(data.message)
+                setLikes((prev) => {
+                    if (prev.includes(currentUser._id)) {
+                        return prev.filter((id) => id !== currentUser._id)
+                    } else {
+                        return [...prev, currentUser._id]
+                    }
+                })
+            } else {
+                toast.error(data.message)
+            }
+        } catch (error) {
+            toast.error(error.message)
         }
     }
 
@@ -25,7 +45,10 @@ const PostCard = ({ post }) => {
     return (
         <div className='bg-white rounded-xl shadow p-4 space-y-4 w-full max-w-2xl'>
             {/* user info */}
-            <div onClick={() => navigate('/profile/' + post.user._id)} className='inline-flex items-center gap-3 cursor-pointer'>
+            <div
+                onClick={() => navigate('/profile/' + post.user._id)}
+                className='inline-flex items-center gap-3 cursor-pointer'
+            >
                 <img
                     src={post.user.profile_picture}
                     alt=''
@@ -57,7 +80,8 @@ const PostCard = ({ post }) => {
                         <img
                             key={index}
                             src={img}
-                            className={`w-full h-48 object-cover rounded-lg ${post.image_urls.length === 1 ? 'col-span-2 h-auto' : ''}`}
+                            className={`w-full h-48 object-cover rounded-lg ${post.image_urls.length === 1 ? 'col-span-2 h-auto' : ''
+                                }`}
                             alt=''
                         />
                     ))}
@@ -68,7 +92,8 @@ const PostCard = ({ post }) => {
             <div className='flex items-center gap-4 text-gray-600 text-sm pt-2 border-t border-gray-300'>
                 <div className='flex items-center gap-1'>
                     <Heart
-                        className={`w-4 h-4 cursor-pointer ${likes.includes(currentUser._id) ? 'text-red-500 fill-red-500' : ''}`}
+                        className={`w-4 h-4 cursor-pointer ${likes.includes(currentUser._id) ? 'text-red-500 fill-red-500' : ''
+                            }`}
                         onClick={handleLike}
                     />
                     <span>{likes.length}</span>

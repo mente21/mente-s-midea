@@ -20,7 +20,7 @@ export const ssecontroller = (req, res) => {
     connections[userId] = res
 
     // send an initial event to the client
-    res.write('log: Connected to SSE stream\n\n')
+    res.write('data: Connected to SSE stream\n\n')
 
     // handle client disconnection
     req.on('close', () => {
@@ -66,11 +66,13 @@ export const sendMessage = async (req, res) => {
 
         res.json({ success: true, message })
 
-        // send message to to_user_id using sse
+        // 🔥 Send only to receiver (not sender)
         const messageWithUserData = await Message.findById(message._id).populate('from_user_id')
         if (connections[to_user_id]) {
+            console.log('📩 Sending message via SSE to receiver:', to_user_id)
             connections[to_user_id].write(`data: ${JSON.stringify(messageWithUserData)}\n\n`)
         }
+
     } catch (error) {
         console.log(error)
         res.json({ success: false, message: error.message })

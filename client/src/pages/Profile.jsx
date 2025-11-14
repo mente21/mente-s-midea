@@ -6,22 +6,46 @@ import UserProfileInfo from '../Components/UserProfileInfo'
 import PostCard from '../Components/PostCard'
 import moment from 'moment'
 import ProfileModal from '../Components/ProfileModal'
+import { useAuth } from '@clerk/clerk-react'
+import api from '../api/axios'
+import toast from 'react-hot-toast'
+import { useSelector } from 'react-redux'
 
 const Profile = () => {
+    const currentUser = useSelector((state) => state.user.value)
+    const { getToken } = useAuth()
     const { profileId } = useParams()
     const [user, setUser] = useState(null)
     const [posts, setPosts] = useState([])
     const [activeTab, setActiveTab] = useState('posts')
     const [showEdit, setShowEdit] = useState(false)
 
-    const fetchUser = async () => {
-        setUser(dummyUserData)
-        setPosts(dummyPostsData)
-    }
+    const fetchUser = async (profileId) => {
+        const token = await getToken(); // ✅ add await
+        try {
+            const { data } = await api.post(`/api/user/profiles`, { profileId }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (data.success) {
+                setUser(data.profile);
+                setPosts(data.posts);
+            } else {
+                toast.error(data.message);
+            }
+        } catch (error) {
+            toast.error(error.message);
+        }
+    };
+
 
     useEffect(() => {
-        fetchUser()
-    }, [])
+        if (profileId) {
+            fetchUser(profileId)
+        } else if (currentUser?._id) {
+            fetchUser(currentUser._id)
+        }
+    }, [profileId, currentUser])
 
     return user ? (
         <div className='relative h-full overflow-y-scroll bg-gray-50 p-6'>
@@ -39,23 +63,40 @@ const Profile = () => {
                         )}
                     </div>
                     {/* user info */}
-                    <UserProfileInfo user={user} posts={posts} profileId={profileId} setShowEdit={setShowEdit} />
+                    <UserProfileInfo
+                        user={user}
+                        posts={posts}
+                        profileId={profileId}
+                        setShowEdit={setShowEdit}
+                    />
                 </div>
+
                 {/* tabs */}
                 <div className='mt-6'>
                     <div className='bg-white rounded-xl shadow p-1 flex max-w-md mx-auto'>
-                        {["posts", "media", "likes"].map((tab) => (
-                            <button onClick={() => setActiveTab(tab)} key={tab} className={`flex-1 px-4 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer ${activeTab === tab ? "bg-indigo-600 text-white" : "text-gray-600 hover:text-gray-900"}`}>
+                        {['posts', 'media', 'likes'].map((tab) => (
+                            <button
+                                onClick={() => setActiveTab(tab)}
+                                key={tab}
+                                className={`flex-1 px-4 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer ${activeTab === tab
+                                    ? 'bg-indigo-600 text-white'
+                                    : 'text-gray-600 hover:text-gray-900'
+                                    }`}
+                            >
                                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
                             </button>
                         ))}
                     </div>
+
                     {/* posts */}
                     {activeTab === 'posts' && (
                         <div className='mt-6 flex flex-col items-center gap-6'>
-                            {posts.map((post) => <PostCard key={post._id} post={post} />)}
+                            {posts.map((post) => (
+                                <PostCard key={post._id} post={post} />
+                            ))}
                         </div>
                     )}
+
                     {/* media */}
                     {activeTab === 'media' && (
                         <div className='flex flex-wrap mt-6 max-w-6xl'>
@@ -82,11 +123,11 @@ const Profile = () => {
                                         ))}
                                     </React.Fragment>
                                 ))}
-
                         </div>
                     )}
                 </div>
             </div>
+
             {/* edit profile modal */}
             {showEdit && <ProfileModal setShowEdit={setShowEdit} />}
         </div>

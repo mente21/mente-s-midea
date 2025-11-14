@@ -3,18 +3,51 @@ import { dummyUserData } from '../assets/assets'
 import { X } from 'lucide-react'
 import { Image as ImageIcon } from 'lucide-react'
 import toast from 'react-hot-toast'
-
-
+import { useSelector } from 'react-redux'
+import { useAuth } from '@clerk/clerk-react'
+import api from '../api/axios'
+import { useNavigate } from 'react-router-dom'
 
 const CreatePost = () => {
+
+    const navigate = useNavigate()
     const [content, setContent] = useState('')
     const [images, setImages] = useState([])
     const [loading, setLoading] = useState(false)
 
-    const user = dummyUserData
+    const user = useSelector((state) => state.user.value)
 
+    const { getToken } = useAuth()
     const handleSubmit = async () => {
+        if (!images.length && !content) {
+            return toast.error('Please add at least one image or text')
+        }
+        setLoading(true)
 
+        const postType = images.length && content ? 'text_with_image' : images.length ? 'image' : 'text'
+        try {
+            const formData = new FormData();
+            formData.append('content', content)
+            formData.append('post_type', postType)
+            images.map((image) => {
+                formData.append('images', image)
+            })
+            const { data } = await api.post('/api/post/add', formData, {
+                headers: {
+                    Authorization: `Bearer ${await getToken()}`
+                }
+            })
+            if (data.success) {
+                navigate('/')
+            } else {
+                console.log(data.message)
+                throw new Error(data.message)
+            }
+        } catch (error) {
+            console.log(error.message)
+            throw new Error(error.message)
+
+        }
     }
 
     return (
@@ -79,16 +112,23 @@ const CreatePost = () => {
                         </label>
 
                         <input type="file" id="images" accept='image/*' hidden multiple onChange={(e) => setImages([...images, ...e.target.files])} />
-                        <button disabled={loading} onClick={() => toast.promise(
-                            handleSubmit(),
-                            {
-                                loading: 'updating ...',
-                                success: <p>Post Added</p>,
-                                error: <p>Post Not Added</p>,
+                        <button
+                            disabled={loading}
+                            onClick={() =>
+                                toast.promise(
+                                    handleSubmit,
+                                    {
+                                        loading: 'updating ...',
+                                        success: <p>Post Added</p>,
+                                        error: <p>Post Not Added</p>,
+                                    }
+                                )
                             }
-                        )} className='text-sm bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 active:scale-95 transition text-white font-medium px-8 py-2 rounded-md cursor-pointer'>
+                            className='text-sm bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 active:scale-95 transition text-white font-medium px-8 py-2 rounded-md cursor-pointer'
+                        >
                             Publish Post
                         </button>
+
                     </div>
 
                 </div>

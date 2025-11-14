@@ -36,17 +36,34 @@ const StoryViewer = ({ viewStory, setViewStory }) => {
     if (!viewStory) return null
 
 
+    // storyviewer.jsx (FINAL VERSION)
+
+    // ...
+
     const renderContent = () => {
         switch (viewStory.media_type) {
             case 'image':
                 return (
-                    <img src={viewStory.media_url} alt='' className='max-w-full max-h-screen object-contain' />
+                    <img
+                        // 🚩 FINAL FIX 1: Decode the URL before passing it to src
+                        src={decodeURI(viewStory.media_url)}
+                        alt=''
+                        className='max-w-full max-h-screen object-contain'
+                    />
                 );
             case 'video':
                 return (
-                    <video onEnded={() => setViewStory(null)} src={viewStory.media_url} alt='' className='max-h-screen' controls autoPlay />
+                    <video
+                        onEnded={() => setViewStory(null)}
+                        // 🚩 FINAL FIX 2: Decode the URL before passing it to src
+                        src={decodeURI(viewStory.media_url)}
+                        alt=''
+                        className='max-h-screen'
+                        controls
+                        autoPlay
+                    />
                 );
-
+            // ...
             case 'text':
                 return (
                     <div className='w-full h-full flex items-center justify-center p-8 text-white text-2xl text-center'>

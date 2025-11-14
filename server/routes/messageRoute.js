@@ -3,13 +3,13 @@ import { getChatMessages, sendMessage, ssecontroller } from '../controllers/mess
 import { upload } from '../configs/multer.js';
 import { protect } from '../middlewares/auth.js';
 
-
 const messageRouter = express.Router();
 
-messageRouter.get('/:userId', ssecontroller)
-messageRouter.post('/send', upload.single('image'), protect, sendMessage)
-messageRouter.post('/get', protect, getChatMessages)
+// SSE endpoint — should be BEFORE protect
+messageRouter.get('/stream/:userId', ssecontroller);
 
-export default messageRouter
+// Message routes
+messageRouter.post('/send', protect, upload.single('image'), sendMessage);
+messageRouter.post('/get', protect, getChatMessages);
 
-
+export default messageRouter;
