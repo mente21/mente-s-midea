@@ -53,6 +53,8 @@ const StoryModal = ({ setShowModal, fetchStories }) => {
     }
   }
 
+
+  // storymodel.jsx (Replace the whole function)
   const handleCreateStory = async () => {
     const media_type = mode === 'media'
       ? media?.type.startsWith('image')
@@ -61,7 +63,8 @@ const StoryModal = ({ setShowModal, fetchStories }) => {
       : 'text'
 
     if (media_type === "text" && !text) {
-      return toast.error("Please enter some text")
+      // Throw instead of returning toast.error
+      throw new Error("Please enter some text")
     }
 
     const formData = new FormData()
@@ -77,14 +80,17 @@ const StoryModal = ({ setShowModal, fetchStories }) => {
       })
 
       if (data.success) {
+        // On success, perform side effects and RETURN data (resolves toast promise)
         setShowModal(false)
-        toast.success("Story created successfully")
         fetchStories()
+        return data;
       } else {
-        toast.error(data.message)
+        // If the server reports failure, THROW an error to reject the toast promise
+        throw new Error(data.message || 'Server reported failure')
       }
     } catch (error) {
-      toast.error(error.message)
+      // Re-throw any network or unhandled error to reject the toast promise
+      throw new Error(error.response?.data?.message || error.message || "An unknown error occurred")
     }
   }
 
@@ -160,7 +166,7 @@ const StoryModal = ({ setShowModal, fetchStories }) => {
             onClick={() => toast.promise(handleCreateStory(), {
               loading: 'Saving...',
               success: 'Story created successfully!',
-              error: 'Failed to create story'
+              error: (e) => e.message || 'Failed to create story' // <-- Use (e) => e.message to display specific errors
             })}
             className='flex items-center justify-center gap-2 text-white py-3 mt-4 w-full rounded bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 active:scale-95 transition cursor-pointer'
           >

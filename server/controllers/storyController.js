@@ -58,8 +58,8 @@ export const addUserStory = async (req, res) => {
         // creat story
         const story = await Story.create({
             user: userId,
-            // 🚩 FIX 3 (Robustness): Use null for non-text content if text is empty
-            content: content || (media_type === 'text' ? ' ' : null),
+            // Use the content as received. If it's empty string, that's fine for optional fields.
+            content: content,
             media_url,
             media_type,
             background_color
