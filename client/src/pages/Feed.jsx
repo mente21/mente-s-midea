@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { assets } from '../assets/assets'
 import Loading from '../Components/Loading'
-import StoriesBar from '../Components/storiesBar'
+import StoriesBar from '../Components/StoriesBar'
 import PostCard from '../Components/PostCard'
 import RecentMessage from '../Components/RecentMessage'
 import { useAuth } from '@clerk/clerk-react'
