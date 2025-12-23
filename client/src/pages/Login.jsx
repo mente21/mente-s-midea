@@ -1,6 +1,6 @@
 import React from 'react'
 import { assets } from '../assets/assets'
-import { Star } from 'lucide-react'
+import { Star, Users } from 'lucide-react'
 import { SignIn } from '@clerk/clerk-react'
 
 const Login = () => {
@@ -16,11 +16,14 @@ const Login = () => {
             {/* Left side branding */}
             <div className='flex-1 flex flex-col items-start justify-between p-6 md:p-10 lg:pl-40'>
                 {/* Logo with added spacing */}
-                <img
-                    src={assets.logo}
-                    alt='Logo'
-                    className='h-12 object-contain mb-10 md:mb-16'
-                />
+                <div className='flex items-center gap-2.5 mb-8 md:mb-12'>
+                    <div className='bg-gradient-to-br from-indigo-600 to-indigo-800 p-1.5 rounded-lg text-white shadow-md'>
+                        <Users className='w-6 h-6 md:w-8 md:h-8' />
+                    </div>
+                    <span className='text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-indigo-950 to-indigo-800 bg-clip-text text-transparent tracking-tighter leading-normal'>
+                        BinUp
+                    </span>
+                </div>
 
                 <div>
                     <div className='flex items-center gap-3 mb-6 max-md:mt-10'>
@@ -51,7 +54,7 @@ const Login = () => {
                     </h1>
 
                     <p className='text-lg md:text-2xl text-indigo-900 max-w-72 md:max-w-md mt-2'>
-                        Connect with global community on Pingup.
+                        Connect with global community on BinUp.
                     </p>
                 </div>
 

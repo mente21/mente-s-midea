@@ -2,7 +2,7 @@ import React from 'react'
 import { assets, dummyUserData } from '../assets/assets'
 import { Link, useNavigate } from 'react-router-dom'
 import MenuItems from './MenuItems'
-import { CirclePlus, LogOut } from 'lucide-react'
+import { CirclePlus, LogOut, Users } from 'lucide-react'
 import { UserButton, useClerk } from '@clerk/clerk-react'
 import { useSelector } from 'react-redux'
 
@@ -19,12 +19,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         >
             {/* --- Top Section --- */}
             <div className='w-full'>
-                <img
+                <div
                     onClick={() => navigate('/')}
-                    src={assets.logo}
-                    alt='Logo'
-                    className='w-26 ml-7 my-2 cursor-pointer'
-                />
+                    className='flex items-center gap-2 ml-7 my-4 cursor-pointer group'
+                >
+                    <div className='bg-gradient-to-br from-indigo-500 to-purple-600 p-1 rounded-md text-white group-hover:scale-110 transition-transform'>
+                        <Users className='w-4 h-4' />
+                    </div>
+                    <span className='text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent tracking-tight leading-normal'>
+                        BinUp
+                    </span>
+                </div>
                 <hr className='border-gray-300 mb-8' />
 
                 <MenuItems setSidebarOpen={setSidebarOpen} />
