@@ -1,13 +1,19 @@
 import mongoose from 'mongoose';
 
+let isConnected = false;
+
 const connectDB = async () => {
+    if (isConnected) return;
+
     try {
-        mongoose.connection.on('connected', () => console.log('database connected '))
-        await mongoose.connect(`${process.env.MONGODB_URL}/pingup`)
+        await mongoose.connect(process.env.MONGODB_URL, {
+            dbName: "pingup"
+        });
+        isConnected = true;
+        console.log('database connected');
     } catch (error) {
-        console.log(error.message)
+        console.log("DB Connection Error:", error.message);
     }
 }
 
-
-export default connectDB
+export default connectDB;
