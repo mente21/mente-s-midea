@@ -27,7 +27,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                         <Users className='w-4 h-4' />
                     </div>
                     <span className='text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent tracking-tight leading-normal'>
-                        BinUp
+                        PingUp
                     </span>
                 </div>
                 <hr className='border-gray-300 mb-8' />

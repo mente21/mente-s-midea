@@ -21,7 +21,7 @@ const Login = () => {
                         <Users className='w-6 h-6 md:w-8 md:h-8' />
                     </div>
                     <span className='text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-indigo-950 to-indigo-800 bg-clip-text text-transparent tracking-tighter leading-normal'>
-                        BinUp
+                        PingUp
                     </span>
                 </div>
 
@@ -54,7 +54,7 @@ const Login = () => {
                     </h1>
 
                     <p className='text-lg md:text-2xl text-indigo-900 max-w-72 md:max-w-md mt-2'>
-                        Connect with global community on BinUp.
+                        Connect with global community on PingUp.
                     </p>
                 </div>
 
