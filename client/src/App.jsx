@@ -48,15 +48,23 @@ const App = () => {
       const eventSource = new EventSource(import.meta.env.VITE_BASEURL + '/api/message/stream/' + user.id);
 
       eventSource.onmessage = (event) => {
-        const message = JSON.parse(event.data)
+        try {
+          const message = JSON.parse(event.data)
+          
+          if (message.type === 'connection') {
+             console.log("SSE Connected:", message.message);
+             return;
+          }
 
-        if (pathnameRef.current === ('/messages/' + message.from_user_id._id)) {
-          dispatch(addMessage(message))
-        } else {
-          toast.custom((t) => (
-            <Notification t={t} message={message} />
-          ), { position: "bottom-right" })
-
+          if (pathnameRef.current === ('/messages/' + message.from_user_id._id)) {
+            dispatch(addMessage(message))
+          } else {
+            toast.custom((t) => (
+              <Notification t={t} message={message} />
+            ), { position: "bottom-right" })
+          }
+        } catch (error) {
+           console.log("SSE Message Parse Error:", error);
         }
       }
       return () => {

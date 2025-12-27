@@ -9,6 +9,7 @@ import userRouter from './routes/userRoute.js';
 import postRouter from './routes/PostRouts.js';
 import storyRouter from './routes/storyRouter.js';
 import messageRouter from './routes/messageRoute.js';
+import commentRouter from './routes/commentRouter.js';
 
 const app = express();
 
@@ -20,11 +21,12 @@ app.use(cors());
 app.use(clerkMiddleware());
 
 app.get('/', (req, res) => res.send('server is running'));
-app.use("/api/inngest", serve({ client: inngest, functions }));
+// app.use("/api/inngest", serve({ client: inngest, functions }));
 app.use('/api/user', userRouter)
 app.use('/api/post', postRouter);
 app.use('/api/story', storyRouter);
 app.use('/api/message', messageRouter);
+app.use('/api/comment', commentRouter);
 
 // Export for Vercel
 export default app;

@@ -2,6 +2,7 @@ import fs from 'fs'
 import imagekit from '../configs/imageKit.js';
 import Post from '../models/Post.js';
 import User from '../models/user.js';
+import Comment from '../models/Comment.js';
 
 //add post
 
@@ -53,14 +54,18 @@ export const addPost = async (req, res) => {
 export const getFeedPosts = async (req, res) => {
     try {
         const { userId } = req.auth();
-        const user = await User.findById(userId);
-
-        const userIds = [userId, ...user.connections, ...user.following];
-        const posts = await Post.find({ user: { $in: userIds } })
+        const posts = await Post.find({})
             .populate('user')
             .sort({ createdAt: -1 });
 
-        res.json({ success: true, posts });
+        const postsWithCounts = await Promise.all(posts.map(async (p) => {
+            const count = await Comment.countDocuments({ post: p._id });
+            const pObj = p.toObject();
+            pObj.comments_count = count;
+            return pObj;
+        }));
+
+        res.json({ success: true, posts: postsWithCounts });
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: error.message });

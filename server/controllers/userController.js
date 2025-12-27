@@ -8,13 +8,42 @@ import fs from 'fs'
 
 
 
+import { clerkClient } from "@clerk/express";
+
 // get user data using userID
 export const getUserData = async (req, res) => {
     try {
         const { userId } = req.auth();
-        const user = await User.findById(userId);
+        let user = await User.findById(userId);
+
         if (!user) {
-            return res.json({ success: false, message: "User not found" });
+            // If user not found in DB, sync from Clerk manually (Self-healing)
+            try {
+                const clerkUser = await clerkClient.users.getUser(userId);
+
+                // Ensure unique username
+                let baseUsername = clerkUser.username || clerkUser.emailAddresses[0].emailAddress.split('@')[0];
+                let uniqueUsername = baseUsername;
+                let counter = 1;
+                while (await User.findOne({ username: uniqueUsername })) {
+                    uniqueUsername = `${baseUsername}${Math.floor(Math.random() * 1000)}`;
+                    counter++;
+                }
+
+                user = await User.create({
+                    _id: userId,
+                    email: clerkUser.emailAddresses[0].emailAddress,
+                    full_name: clerkUser.fullName || `${clerkUser.firstName} ${clerkUser.lastName}`,
+                    username: uniqueUsername,
+                    profile_picture: clerkUser.imageUrl,
+                    connections: [],
+                    followers: [],
+                    following: []
+                });
+                
+            } catch (clerkError) {
+                 return res.json({ success: false, message: "User not found and sync failed: " + clerkError.message });
+            }
         }
         res.json({ success: true, user });
     } catch (error) {
@@ -103,27 +132,33 @@ export const updateUserData = async (req, res) => {
 
 
 // find users using username , email, location,name
+// find users using username , email, location,name
 export const discoverUsers = async (req, res) => {
     try {
+        console.log("Discover Users Endpoint Hit. Body:", req.body);
         const { userId } = req.auth();
         const { input } = req.body;
 
-        const allUsers = await User.find(
-            {
+        let query = {};
+        if (input && input.trim() !== "") {
+            query = {
                 $or: [
                     { username: new RegExp(input, 'i') },
                     { email: new RegExp(input, 'i') },
                     { full_name: new RegExp(input, 'i') },
                     { location: new RegExp(input, 'i') },
-
                 ]
-            }
-        )
+            };
+        }
+
+        const allUsers = await User.find(query);
         const filteredUsers = allUsers.filter(user => user._id !== userId);
+        
+        console.log(`Found ${filteredUsers.length} users`);
         res.json({ success: true, users: filteredUsers })
 
     } catch (error) {
-        console.log(error);
+        console.log("Error in discoverUsers:", error);
         res.json({ success: false, message: error.message });
     }
 };
@@ -232,11 +267,42 @@ export const getUserConnections = async (req, res) => {
     try {
         const { userId } = req.auth();
 
-        const user = await User.findById(userId).populate('connections followers following');
+        let user = await User.findById(userId).populate('connections followers following');
 
-        const connections = user.connections;
-        const followers = user.followers;
-        const following = user.following;
+        if (!user) {
+             // Self-healing: Sync from Clerk if missing
+             try {
+                const clerkUser = await clerkClient.users.getUser(userId);
+
+                // Ensure unique username
+                let baseUsername = clerkUser.username || clerkUser.emailAddresses[0].emailAddress.split('@')[0];
+                let uniqueUsername = baseUsername;
+                while (await User.findOne({ username: uniqueUsername })) {
+                    uniqueUsername = `${baseUsername}${Math.floor(Math.random() * 1000)}`;
+                }
+
+                user = await User.create({
+                    _id: userId,
+                    email: clerkUser.emailAddresses[0].emailAddress,
+                    full_name: clerkUser.fullName || `${clerkUser.firstName} ${clerkUser.lastName}`,
+                    username: uniqueUsername,
+                    profile_picture: clerkUser.imageUrl,
+                    connections: [],
+                    followers: [],
+                    following: []
+                });
+                // Since it's new, these are empty, but we match the structure
+                user.connections = [];
+                user.followers = [];
+                user.following = [];
+            } catch (clerkError) {
+                 return res.json({ success: false, message: "User not found and sync failed: " + clerkError.message });
+            }
+        }
+
+        const connections = user.connections || [];
+        const followers = user.followers || [];
+        const following = user.following || [];
 
         const pendingConnections = (await Connection.find({
             to_user_id: userId,

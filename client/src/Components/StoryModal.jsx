@@ -95,62 +95,69 @@ const StoryModal = ({ setShowModal, fetchStories }) => {
   }
 
   return (
-    <div className="fixed inset-0 z-110 min-h-screen bg-black/80 backdrop-blur text-white flex items-center justify-center p-4">
-      <div className="w-full max-w-md flex flex-col items-center">
+    <div className="fixed inset-0 z-110 min-h-screen bg-slate-950/90 backdrop-blur-2xl text-slate-100 flex items-center justify-center p-6 no-scrollbar overflow-y-auto">
+      <div className="w-full max-w-lg flex flex-col items-center animate-in zoom-in-95 duration-500">
 
         {/* Header */}
-        <div className="w-full flex items-center justify-between mb-4">
-          <button onClick={() => setShowModal(false)} className="text-white p-2 cursor-pointer">
-            <ArrowLeft />
+        <div className="w-full flex items-center justify-between mb-8">
+          <button onClick={() => setShowModal(false)} className="text-slate-400 p-3 hover:text-white hover:bg-slate-900/50 rounded-2xl transition-all cursor-pointer">
+            <ArrowLeft className='w-6 h-6' />
           </button>
-          <h2 className="text-lg font-semibold">Create Story</h2>
-          <span className="w-10"></span>
+          <div className='text-center'>
+             <h2 className="text-2xl font-black uppercase tracking-tighter">Neural <span className='text-teal-400'>Moment</span></h2>
+             <p className='text-[10px] text-slate-500 font-bold uppercase tracking-widest'>Fragment your consciousness into the network.</p>
+          </div>
+          <span className="w-12"></span>
         </div>
 
-        {/* Story Area */}
+        {/* Story Workspace Area */}
         <div
-          className="rounded-lg h-96 w-full flex items-center justify-center relative"
+          className="rounded-[40px] h-[500px] w-full flex items-center justify-center relative overflow-hidden shadow-2xl border-4 border-slate-800 ring-1 ring-slate-700/50 group"
           style={{ backgroundColor: background }}
         >
           {mode === 'text' && (
             <textarea
-              className="bg-transparent text-white w-full h-full p-6 text-lg resize-none focus:outline-none text-center"
-              placeholder="What's on your mind?"
+              className="bg-transparent text-white w-full h-full p-12 text-2xl font-black resize-none focus:outline-none text-center flex items-center justify-center pt-32 placeholder:text-white/20 tracking-tight leading-tight"
+              placeholder="WHAT'S FLASHING IN THE VOID?"
               onChange={(e) => setText(e.target.value)}
               value={text}
             />
           )}
 
           {mode === 'media' && previewUrl && (
-            media?.type.startsWith('image')
-              ? <img src={previewUrl} alt='' className='object-contain max-h-full' />
-              : <video src={previewUrl} className='object-contain max-h-full' controls />
+            <div className='size-full relative'>
+               {media?.type.startsWith('image')
+                ? <img src={previewUrl} alt='' className='size-full object-cover group-hover:scale-105 transition-transform duration-1000' />
+                : <video src={previewUrl} className='size-full object-cover group-hover:scale-105 transition-transform duration-1000' autoPlay loop muted />
+               }
+               <div className='absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60'></div>
+            </div>
           )}
         </div>
 
-        {/* Controls */}
-        <div>
-          <div className='flex mt-4 gap-2'>
+        {/* Workspace Controls */}
+        <div className='w-full max-w-sm'>
+          <div className='flex justify-center mt-6 gap-3'>
             {bgColors.map((color) => (
               <button
                 key={color}
-                className='w-6 h-6 rounded-full ring cursor-pointer'
+                className={`w-7 h-7 rounded-full ring-2 transition-all cursor-pointer hover:scale-110 ${background === color ? 'ring-teal-400 scale-125 shadow-[0_0_15px_rgba(45,212,191,0.4)]' : 'ring-slate-800'}`}
                 style={{ backgroundColor: color }}
                 onClick={() => setBackground(color)}
               />
             ))}
           </div>
 
-          <div className='flex gap-2 mt-4'>
+          <div className='flex gap-3 mt-8 bg-slate-900/50 p-2 rounded-2xl border border-slate-800/80'>
             <button
               onClick={() => { setMode('text'); setMedia(null); setPreviewUrl(null) }}
-              className={`flex-1 flex items-center justify-center gap-2 p-2 px-9 rounded ${mode === 'text' ? "bg-white text-black" : "bg-zinc-800"}`}
+              className={`flex-1 flex items-center justify-center gap-3 py-3 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest ${mode === 'text' ? "bg-teal-500 text-slate-950 shadow-lg shadow-teal-500/10" : "text-slate-500 hover:text-slate-300"}`}
             >
-              <Type size={18} /> Text
+              <Type size={16} /> Text
             </button>
 
             <label
-              className={`flex-1 flex items-center justify-center gap-2 p-2 rounded cursor-pointer ${mode === 'media' ? "bg-white text-black" : "bg-zinc-800"}`}
+              className={`flex-1 flex items-center justify-center gap-3 py-3 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest cursor-pointer ${mode === 'media' ? "bg-teal-500 text-slate-950 shadow-lg shadow-teal-500/10" : "text-slate-500 hover:text-slate-300"}`}
             >
               <input
                 onChange={handleMediaUpload}
@@ -158,19 +165,19 @@ const StoryModal = ({ setShowModal, fetchStories }) => {
                 accept='image/*,video/*'
                 className='hidden'
               />
-              <Upload size={18} /> Photo/Video
+              <Upload size={16} /> Vision
             </label>
           </div>
 
           <button
             onClick={() => toast.promise(handleCreateStory(), {
-              loading: 'Saving...',
-              success: 'Story created successfully!',
-              error: (e) => e.message || 'Failed to create story' // <-- Use (e) => e.message to display specific errors
+              loading: 'Projecting signal...',
+              success: 'Moment Synced',
+              error: (e) => e.message || 'Projection Failed'
             })}
-            className='flex items-center justify-center gap-2 text-white py-3 mt-4 w-full rounded bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 active:scale-95 transition cursor-pointer'
+            className='flex items-center justify-center gap-3 text-slate-950 py-4 mt-6 w-full rounded-2xl bg-gradient-to-r from-teal-500 to-cyan-500 font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-teal-500/20 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer'
           >
-            <Sparkle size={18} />Create Story
+            <Sparkle size={18} />Broadcast Moment
           </button>
         </div>
       </div>

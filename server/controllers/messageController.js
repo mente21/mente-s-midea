@@ -20,7 +20,9 @@ export const ssecontroller = (req, res) => {
     connections[userId] = res
 
     // send an initial event to the client
-    res.write('data: Connected to SSE stream\n\n')
+    // res.write('data: Connected to SSE stream\n\n')
+    // FIX: Send Valid JSON format to prevent frontend parse error
+    res.write(`data: ${JSON.stringify({ type: 'connection', message: 'Connected to SSE stream' })}\n\n`)
 
     // handle client disconnection
     req.on('close', () => {

@@ -111,11 +111,16 @@ export const getStories = async (req, res) => {
         const userId = req.userId;
         const user = await User.findById(userId)
 
-        const userIds = [userId, ...user.connections, ...user.following]
+        // const userIds = [userId, ...user.connections, ...user.following]
 
-        const stories = await Story.find({
-            user: { $in: userIds }
-        }).populate('user').sort({ createdAt: -1 });
+        // const stories = await Story.find({
+        //     user: { $in: userIds }
+        // }).populate('user').sort({ createdAt: -1 });
+
+        // TEMPORARY FIX: Show ALL stories for testing
+        const stories = await Story.find({})
+            .populate('user')
+            .sort({ createdAt: -1 });
 
         console.log(`Stories found for frontend: ${stories.length}`);
 

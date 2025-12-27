@@ -10,6 +10,16 @@ const { connection } = mongoose;
 // Create a client to send and receive events
 export const inngest = new Inngest({ id: "pingup-app" });
 
+// Safety wrapper for missing keys
+const originalSend = inngest.send;
+inngest.send = async (...args) => {
+    if (!process.env.INNGEST_EVENT_KEY) {
+        console.log("Inngest event key missing. Skipping event send.");
+        return { ids: [] };
+    }
+    return originalSend.apply(inngest, args);
+};
+
 // inngest function to save user data to database
 const syncUserCreation = inngest.createFunction(
     { id: "sync-user-from-clerk" },
@@ -78,7 +88,7 @@ const sendNewConnectionRequestReminder = inngest.createFunction(
                 <h2>Hi ${connection.to_user_id.full_name},</h2>
                 <p>Click <a href="${process.env.FRONTEND_URL}/connections" style="color: #10b981;">Here</a> to accept or reject the request</p>
                 <br/>
-                <p>Thanks,<br/>PingUP - stay Connected (index inngest folder)</p>
+                <p>Thanks,<br/>Mente's App - stay connected (index inngest folder)</p>
             </div>`;
 
             await sendEmail({
@@ -103,7 +113,7 @@ const sendNewConnectionRequestReminder = inngest.createFunction(
                 <h2>Hi ${connection.to_user_id.full_name},</h2>
                 <p>Click <a href="${process.env.FRONTEND_URL}/connections" style="color: #10b981;">Here</a> to accept or reject the request</p>
                 <br/>
-                <p>Thanks,<br/>PingUP - stay Connected (index inngest folder)</p>
+                <p>Thanks,<br/>Mente's App - stay connected (index inngest folder)</p>
             </div>`;
 
             await sendEmail({

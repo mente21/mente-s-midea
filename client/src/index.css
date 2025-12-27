@@ -1,10 +1,67 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 @import "tailwindcss";
 
+:root {
+  --teal-accent: #2dd4bf;
+  --cyan-accent: #06b6d4;
+}
+
 * {
   font-family: "Outfit", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  background-color: #020617; /* Slate 950 */
+  color: #f8fafc; /* Slate 50 */
+  overflow: hidden; /* Handled by layout scrollbars */
+  scrollbar-width: none;
+}
+
+::selection {
+  background-color: rgba(45, 212, 191, 0.2);
+  color: #2dd4bf;
 }
 
 .no-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+/* Neural Background Animation */
+@keyframes neuralPulse {
+  0% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.1); }
+  100% { opacity: 0.3; transform: scale(1); }
+}
+
+.neural-glow {
+  animation: neuralPulse 8s infinite ease-in-out;
+}
+
+/* Glassmorphism Utilities */
+.glass-panel {
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #020617;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2dd4bf22;
 }
